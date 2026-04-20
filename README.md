@@ -176,40 +176,6 @@ Le sidebar droit bascule entre plusieurs panneaux :
 - **Fichiers** — partage et prévisualisation
 - **Stats** — diagnostics réseau (bitrate, perte de paquets)
 
----
-
-## 5. Flux de données & communication
-
-### Créer un stream (Hôte)
-
-```
-Hôte                    Backend                   LiveKit Server
-  │                        │                            │
-  │── POST /api/stream/create ──►│                      │
-  │   { displayName, roomName }  │                      │
-  │                        │──── createRoom() ─────────►│
-  │                        │◄─── room créée ────────────│
-  │◄── { token, roomName, wsUrl }│                      │
-  │                        │                            │
-  │──────────────── connect(wsUrl, token) ─────────────►│
-  │◄──────────────── connexion WebSocket établie ───────│
-  │                        │                            │
-  │──── publishTrack (caméra, micro) ──────────────────►│
-```
-
-### Rejoindre un stream (Spectateur)
-
-```
-Spectateur              Backend                   LiveKit Server
-  │                        │                            │
-  │── POST /api/stream/join ──────►│                    │
-  │   { displayName, roomName }    │                    │
-  │◄── { token, roomName, wsUrl }──│                    │
-  │                        │                            │
-  │──────────── connect(wsUrl, token) ─────────────────►│
-  │◄──────────── tracks hôte reçus automatiquement ─────│
-```
-
 ### Invitation sur scène
 
 ```
@@ -225,28 +191,7 @@ Spectateur → reconnect avec nouveau token → publie vidéo/audio
 
 ### Principe
 
-L'E2EE utilise l'API officielle de LiveKit SDK (`KeyProvider`, `E2EEManager`). Les clés ne transitent **jamais** par le serveur.
-
-### Dérivation de clé
-
-```javascript
-// Clé dérivée du code room via PBKDF2
-const keyMaterial = await crypto.subtle.importKey(
-  'raw',
-  encoder.encode(roomCode),
-  { name: 'PBKDF2' },
-  false,
-  ['deriveKey']
-);
-
-const key = await crypto.subtle.deriveKey(
-  { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
-  keyMaterial,
-  { name: 'AES-GCM', length: 256 },
-  true,
-  ['encrypt', 'decrypt']
-);
-```
+Les clés ne transitent **jamais** par le serveur.
 
 ### Modes
 
@@ -254,12 +199,6 @@ const key = await crypto.subtle.deriveKey(
 |------|-------------|
 | **Manuel** | Chaque participant active l'E2EE individuellement |
 | **Global** | L'hôte active l'E2EE pour tous simultanément |
-
-### Prérequis techniques
-
-- Le serveur doit être servi en **HTTPS** (requis pour `SharedArrayBuffer`)
-- Header `Cross-Origin-Opener-Policy: same-origin` obligatoire
-- Le build Vite cible `esnext` pour les Workers ES modules
 
 ---
 
