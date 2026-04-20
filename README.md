@@ -1,7 +1,6 @@
-# JokkoLive — Plateforme de Diffusion en Direct
+# Disoo — Plateforme de Diffusion en Direct
 
-> **"Jokko"** signifie *"parler / se connecter"* en wolof.  
-> JokkoLive est une plateforme de streaming en temps réel sécurisée, développée pour la diffusion d'événements avec interaction audience.
+> disoo est une plateforme de streaming en temps réel sécurisée, développée pour la diffusion d'événements avec interaction audience.
 
 ---
 
@@ -9,23 +8,22 @@
 
 1. [Présentation du projet](#1-présentation-du-projet)
 2. [Architecture globale](#2-architecture-globale)
-3. [Stack technique](#3-stack-technique)
-4. [Structure du projet](#4-structure-du-projet)
-5. [Fonctionnalités principales](#5-fonctionnalités-principales)
-6. [Flux de données & communication](#6-flux-de-données--communication)
-7. [Chiffrement de bout en bout (E2EE)](#7-chiffrement-de-bout-en-bout-e2ee)
-8. [Sous-titres en temps réel (IA embarquée)](#8-sous-titres-en-temps-réel-ia-embarquée)
-9. [Étapes de développement](#9-étapes-de-développement)
-10. [Installation & démarrage](#10-installation--démarrage)
-11. [Variables d'environnement](#11-variables-denvironnement)
-12. [API Backend](#12-api-backend)
-13. [Déploiement](#13-déploiement)
+3. [Structure du projet](#4-structure-du-projet)
+4. [Fonctionnalités principales](#5-fonctionnalités-principales)
+5. [Flux de données & communication](#6-flux-de-données--communication)
+6. [Chiffrement de bout en bout (E2EE)](#7-chiffrement-de-bout-en-bout-e2ee)
+7. [Sous-titres en temps réel (IA embarquée)](#8-sous-titres-en-temps-réel-ia-embarquée)
+10. [Étapes de développement](#9-étapes-de-développement)
+11. [Installation & démarrage](#10-installation--démarrage)
+12. [Variables d'environnement](#11-variables-denvironnement)
+13. [API Backend](#12-api-backend)
+14. [Déploiement](#13-déploiement)
 
 ---
 
 ## 1. Présentation du projet
 
-JokkoLive est une application web de diffusion en direct (live streaming) construite autour de **LiveKit** (WebRTC). Elle permet à un hôte de lancer un stream vidéo/audio, d'inviter des intervenants sur scène, et de gérer une audience en temps réel avec des outils d'interaction riches.
+disoo est une application web de diffusion en direct (live streaming) construite autour de **LiveKit** (WebRTC). Elle permet à un hôte de lancer un stream vidéo/audio, d'inviter des intervenants sur scène, et de gérer une audience en temps réel avec des outils d'interaction riches.
 
 **Cas d'usage :**
 - Conférences et webinaires
@@ -35,7 +33,6 @@ JokkoLive est une application web de diffusion en direct (live streaming) constr
 
 **Caractéristiques clés :**
 - Streaming WebRTC basse latence via LiveKit
-- Chiffrement E2EE (AES-GCM 256 bits)
 - Sous-titres automatiques en temps réel (Whisper AI, 100% navigateur)
 - Sondages, notes collaboratives, partage de fichiers
 - Réactions emoji en temps réel
@@ -57,119 +54,95 @@ JokkoLive est une application web de diffusion en direct (live streaming) constr
 └─────────┼──────────────────┼─────────────────────────────────────┘
           │ REST (fetch)      │ WebSocket (wss://)
           ▼                  ▼
-┌─────────────────┐   ┌──────────────────────┐
-│   Backend API   │   │   LiveKit Server     │
-│  (Node.js)      │   │  (Media SFU)         │
-│  backjm.unchk.sn│   │  livekitjm.unchk.sn  │
-│                 │   │                      │
-│  /api/stream/*  │──►│  Gestion des rooms   │
-│  Génère tokens  │   │  Routage vidéo/audio │
-│  JWT LiveKit    │   │  DataChannel         │
-└─────────────────┘   └──────────────────────┘
-```
-
-**Flux simplifié :**
-1. L'hôte appelle le backend pour créer un stream → reçoit un **token JWT LiveKit**
-2. Le client se connecte au **serveur LiveKit** via WebSocket avec ce token
-3. LiveKit gère le routage des flux vidéo/audio entre participants (SFU)
-4. Les messages de chat, réactions et signaux passent par le **DataChannel** de LiveKit
-5. Whisper tourne localement dans un **Web Worker** pour les sous-titres
+   ┌──────────────────────┐
+│   LiveKit Server     │
+  │  (Media SFU)         │
+   │  livekitjm.unchk.sn  │
+│                 │   │                   
+►│  Gestion des rooms   │
+   │  Routage vidéo/audio │
+  │  DataChannel         │
+   └──────────────────────┘
 
 ---
 
-## 3. Stack technique
-
-| Couche | Technologie | Version | Rôle |
-|--------|-------------|---------|------|
-| Framework UI | React | 19.2.0 | Composants et gestion d'état |
-| Routage | React Router DOM | 7.13.1 | Navigation SPA |
-| Build | Vite + SWC | 7.3.1 | Bundler ultra-rapide |
-| WebRTC | livekit-client | 2.17.2 | Streaming vidéo/audio temps réel |
-| Style | Tailwind CSS | 3.4.1 | Utility-first CSS |
-| Icônes | Lucide React | 0.575.0 | Bibliothèque d'icônes SVG |
-| IA / ASR | @huggingface/transformers | 3.8.1 | Whisper (speech-to-text) |
-| Chiffrement | Web Crypto API | natif | AES-GCM E2EE |
-| Audio | AudioWorklet API | natif | Traitement microphone bas niveau |
-
----
-
-## 4. Structure du projet
+## 3. Structure du projet
 
 ```
 jokkolive/
 ├── public/
-│   ├── senegal.jpg              # Logo / branding
-│   └── sons/                   # Sons de notification
+│   ├── senegal.jpg             
+│   └── sons/                  
 │
-├── certificats/                 # Certificats SSL (dev local HTTPS)
+├── certificats/                
 │   ├── localhost.pem
 │   └── localhost-key.pem
 │
 ├── src/
-│   ├── main.jsx                 # Point d'entrée React
-│   ├── App.jsx                  # Routeur principal
-│   ├── config.js                # Variables d'env centralisées + rôles + types de messages
-│   ├── index.css                # Styles globaux + Tailwind
+│   ├── main.jsx              
+│   ├── App.jsx                 
+│   ├── config.js               
+│   ├── index.css              
 │   │
 │   ├── api/
-│   │   └── stream.js            # Toutes les requêtes REST vers le backend
+│   │   └── stream.js           
 │   │
 │   ├── routes/
-│   │   ├── Home.jsx             # Page d'accueil (créer / rejoindre un stream)
-│   │   ├── Stream.jsx           # Page du stream actif
-│   │   └── Join.jsx             # Rejoindre via lien direct /join/:code
+│   │   ├── Home.jsx            
+│   │   ├── Stream.jsx         
+│   │   └── Join.jsx             
 │   │
 │   ├── components/
-│   │   └── ScheduleModal.jsx    # Modal planification d'un stream
+│   │   └── ScheduleModal.jsx   
 │   │
 │   └── features/
 │       └── stream/
-│           ├── components/      # Tous les composants UI du stream
-│           │   ├── ChatPanel.jsx          # Chat en direct avec modération
-│           │   ├── StreamHeader.jsx       # En-tête : titre, compteur, métriques
-│           │   ├── StreamControls.jsx     # Contrôles hôte (micro, caméra, screen)
-│           │   ├── StageArea.jsx          # Zone vidéo des intervenants
-│           │   ├── SpeakerTile.jsx        # Tuile vidéo d'un intervenant
-│           │   ├── ParticipantsPanel.jsx  # Liste participants + rôles
-│           │   ├── AudiencePanel.jsx      # Vue audience
-│           │   ├── PollPanel.jsx          # Sondages interactifs
-│           │   ├── NotesPanel.jsx         # Notes collaboratives
-│           │   ├── FileShareButton.jsx    # Upload de fichiers
-│           │   ├── FileViewerPanel.jsx    # Prévisualisation fichiers
-│           │   ├── LiveSubtitles.jsx      # Affichage sous-titres temps réel
-│           │   ├── ReactionsOverlay.jsx   # Animation emoji flottants
-│           │   ├── HandRaisedToast.jsx    # Notification lever de main
-│           │   ├── StageInviteModal.jsx   # Modal invitation sur scène
-│           │   ├── StreamAnnouncer.jsx    # Toast d'annonces (entrée/sortie)
-│           │   ├── StreamStatsPanel.jsx   # Stats réseau et bitrate
-│           │   └── LeaveConfirmModal.jsx  # Confirmation quitter
+│           ├── components/     
+│           │   ├── ChatPanel.jsx          
+│           │   ├── StreamHeader.jsx       
+│           │   ├── StreamControls.jsx  
+│           │   ├── StageArea.jsx          
+│           │   ├── SpeakerTile.jsx      
+│           │   ├── ParticipantsPanel.jsx  
+│           │   ├── AudiencePanel.jsx     
+│           │   ├── PollPanel.jsx       
+│           │   ├── NotesPanel.jsx         
+│           │   ├── FileShareButton.jsx    
+│           │   ├── FileViewerPanel.jsx  
+│           │   ├── LiveSubtitles.jsx     
+│           │   ├── ReactionsOverlay.jsx 
+│           │   ├── HandRaisedToast.jsx  
+│           │   ├── StageInviteModal.jsx   
+│           │   ├── StreamAnnouncer.jsx    
+│           │   ├── StreamStatsPanel.jsx  
+│           │   └── LeaveConfirmModal.jsx
 │           │
 │           ├── context/
-│           │   └── StreamContext.jsx      # State global du stream (802 lignes)
+│           │   └── StreamContext.jsx     
 │           │
 │           ├── hooks/
-│           │   ├── useLiveSubtitles.js    # Hook orchestration Whisper
-│           │   ├── useStreamAnnouncer.js  # Hook annonces participants
-│           │   └── useStreamTimer.js      # Hook durée du stream
+│           │   ├── useLiveSubtitles.js    
+│           │   ├── useStreamAnnouncer.js 
+│           │   └── useStreamTimer.js     
 │           │
 │           ├── utils/
-│           │   └── e2ee.js                # Utilitaires chiffrement E2EE
+│           │   └── e2ee.js              
 │           │
 │           └── workers/
-│               ├── whisper.worker.js      # Worker IA transcription (Whisper)
-│               └── mic.processor.js       # AudioWorklet traitement micro
+│               ├── whisper.worker.js    
+│               └── mic.processor.js     
 │
-├── .env                         # Variables d'environnement (non versionné)
-├── vite.config.js               # Configuration Vite (HTTPS, workers, build)
-├── tailwind.config.js           # Thème personnalisé (couleurs, polices, animations)
-├── postcss.config.js            # PostCSS (Tailwind + Autoprefixer)
-├── eslint.config.js             # Règles ESLint
-└── package.json                 # Dépendances
+├── .env                         
+├── vite.config.js            
+├── tailwind.config.js          
+├── postcss.config.js           
+├── eslint.config.js        
+└── package.json               
 ```
 
 ---
 
-## 5. Fonctionnalités principales
+## 4. Fonctionnalités principales
 
 ### Gestion des rôles
 
@@ -207,7 +180,7 @@ Le sidebar droit bascule entre plusieurs panneaux :
 
 ---
 
-## 6. Flux de données & communication
+## 5. Flux de données & communication
 
 ### Créer un stream (Hôte)
 
@@ -250,7 +223,7 @@ Spectateur → reconnect avec nouveau token → publie vidéo/audio
 
 ---
 
-## 7. Chiffrement de bout en bout (E2EE)
+## 6. Chiffrement de bout en bout (E2EE)
 
 ### Principe
 
@@ -292,7 +265,7 @@ const key = await crypto.subtle.deriveKey(
 
 ---
 
-## 8. Sous-titres en temps réel (IA embarquée)
+## 7. Sous-titres en temps réel (IA embarquée)
 
 ### Architecture Whisper
 
@@ -327,7 +300,7 @@ Français · Anglais · Arabe · Portugais · Espagnol · Allemand · Wolof
 
 ---
 
-## 9. Étapes de développement
+## 8. Étapes de développement
 
 ### Phase 1 — Fondation streaming
 - Intégration LiveKit SDK
@@ -371,7 +344,7 @@ Français · Anglais · Arabe · Portugais · Espagnol · Allemand · Wolof
 
 ---
 
-## 10. Installation & démarrage
+## 9. Installation & démarrage
 
 ### Prérequis
 
@@ -415,7 +388,7 @@ npm run build
 
 ---
 
-## 11. Variables d'environnement
+## 10. Variables d'environnement
 
 Créer un fichier `.env` à la racine :
 
@@ -438,7 +411,7 @@ VITE_DEBUG=false
 
 ---
 
-## 12. API Backend
+## 11. API Backend
 
 Le frontend consomme ces endpoints REST :
 
@@ -454,7 +427,7 @@ Le frontend consomme ces endpoints REST :
 
 ---
 
-## 13. Déploiement
+## 12. Déploiement
 
 ### Frontend
 
@@ -500,7 +473,5 @@ CDN / Reverse Proxy (Nginx)
 
 ---
 
-## Licence
-
-Projet développé dans le cadre de la plateforme **RTN** (Réseau de Télévision Numérique).  
+## Licence 
 © 2024-2025 — Tous droits réservés.
