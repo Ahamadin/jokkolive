@@ -13,11 +13,9 @@
 5. [Flux de données & communication](#6-flux-de-données--communication)
 6. [Chiffrement de bout en bout (E2EE)](#7-chiffrement-de-bout-en-bout-e2ee)
 7. [Sous-titres en temps réel (IA embarquée)](#8-sous-titres-en-temps-réel-ia-embarquée)
-10. [Étapes de développement](#9-étapes-de-développement)
-11. [Installation & démarrage](#10-installation--démarrage)
-12. [Variables d'environnement](#11-variables-denvironnement)
-13. [API Backend](#12-api-backend)
-14. [Déploiement](#13-déploiement)
+8. [Étapes de développement](#9-étapes-de-développement)
+9. [Installation & démarrage](#10-installation--démarrage)
+10. [Variables d'environnement](#11-variables-denvironnement)
 
 ---
 
@@ -360,16 +358,6 @@ cd jokkolive
 npm install
 ```
 
-### Certificats SSL (développement local)
-
-L'HTTPS est **obligatoire** pour E2EE et `SharedArrayBuffer`.
-
-```bash
-# Avec mkcert
-mkcert -install
-mkcert localhost
-mv localhost.pem certificats/localhost.pem
-mv localhost-key.pem certificats/localhost-key.pem
 ```
 
 ### Lancement
@@ -407,68 +395,6 @@ VITE_TOKEN_PATH=/api/livekit/token
 
 # Mode debug (affiche les logs config au démarrage)
 VITE_DEBUG=false
-```
-
----
-
-## 11. API Backend
-
-Le frontend consomme ces endpoints REST :
-
-| Méthode | Endpoint | Corps | Réponse | Description |
-|---------|----------|-------|---------|-------------|
-| `POST` | `/api/stream/create` | `{ displayName, roomName }` | `{ token, roomName, wsUrl }` | Créer un stream (hôte) |
-| `POST` | `/api/stream/join` | `{ displayName, roomName }` | `{ token, roomName, wsUrl }` | Rejoindre un stream |
-| `POST` | `/api/stream/invite-to-stage` | `{ roomName, identity }` | `{ success }` | Inviter un spectateur à parler |
-| `POST` | `/api/stream/remove-from-stage` | `{ roomName, identity }` | `{ success }` | Retirer un intervenant |
-| `POST` | `/api/stream/accept-stage` | `{ roomName, identity }` | `{ token }` | Obtenir un token speaker |
-| `POST` | `/api/stream/end` | `{ roomName }` | `{ success }` | Terminer le stream |
-| `GET` | `/api/stream/info/:roomName` | — | métadonnées room | Infos stream actif |
-
----
-
-## 12. Déploiement
-
-### Frontend
-
-```bash
-npm run build
-# Servir dist/ avec Nginx ou Caddy
-```
-
-### Headers Nginx obligatoires
-
-```nginx
-server {
-  listen 443 ssl;
-  server_name jokkolive.example.com;
-
-  # Requis pour SharedArrayBuffer (Whisper) et E2EE
-  add_header Cross-Origin-Opener-Policy "same-origin";
-  add_header Cross-Origin-Embedder-Policy "require-corp";
-
-  location / {
-    root /var/www/jokkolive/dist;
-    try_files $uri $uri/ /index.html;
-  }
-}
-```
-
-### Infrastructure de production
-
-```
-Internet
-    │
-    ▼
-CDN / Reverse Proxy (Nginx)
-    │
-    ├──► Frontend React (dist/ statique)
-    │
-    ├──► Backend API Node.js  (backjm.unchk.sn)
-    │         └── Génère tokens JWT LiveKit
-    │
-    └──► LiveKit Server SFU   (livekitjm.unchk.sn)
-              └── WebRTC media routing
 ```
 
 ---
