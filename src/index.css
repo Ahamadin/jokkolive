@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; margin: 0; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 9999px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ─── DARK SURFACES ─── */
+.stream-bg     { background: #080f2a; }
+.stream-card   { background: #0f1d3e; border: 1px solid rgba(255,255,255,0.08); }
+.stream-sidebar{ background: #0c1632; border-left: 1px solid rgba(255,255,255,0.07); }
+
+/* ─── LIVE BADGE ─── */
+.live-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  background: #ef4444; color: #fff;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+  animation: pulseLiveBadge 2s ease infinite;
+}
+.live-badge::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #fff; flex-shrink: 0;
+  animation: dotBlink 1.2s ease infinite;
+}
+@keyframes pulseLiveBadge {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+  50%     { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+@keyframes dotBlink {
+  0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+}
+
+/* ─── VIEWER TILE ─── */
+.viewer-tile {
+  background: #0f1d3e;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+.viewer-tile:hover { border-color: rgba(37,99,235,0.4); }
+
+/* ─── SPEAKER TILE ─── */
+.speaker-tile {
+  background: #182050;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  position: relative; overflow: hidden;
+}
+.speaker-tile.speaking {
+  border-color: rgba(37,99,235,0.7);
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.35);
+}
+
+/* ─── CHAT ─── */
+.chat-bubble-host   { background: rgba(37,99,235,0.18); border: 1px solid rgba(37,99,235,0.3); }
+.chat-bubble-viewer { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+
+/* ─── ANIMATIONS ─── */
+.animate-slide-up {
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+/* ─── REACTION FLOAT ─── */
+@keyframes reactionFloat {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-120px) scale(1.4); opacity: 0; }
+}
+.reaction-float { animation: reactionFloat 2.5s ease forwards; }
+
+/* ─── VIDEO ─── */
+video { background: #000; }
